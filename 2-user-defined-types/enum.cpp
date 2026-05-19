@@ -24,5 +24,8 @@ int main(void) {
     Traffic_light light = Traffic_light::green;
     light = ++light;
     std::cout << "Light: " << static_cast<int>(light) << std::endl;
+
+    enum Color { red, green, blue };
+    int col = green; // plain enum w/o class = int
     return 0;
 }
