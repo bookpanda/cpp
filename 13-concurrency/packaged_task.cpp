@@ -30,9 +30,27 @@ double comp2(std::vector<double> &v) {
     return result;
 }
 
+double comp4(std::vector<double> &v) // spawn many tasks if v is large enough
+{
+    if (v.size() < 10000) // is it worth using concurrency?
+        return std::accumulate(v.begin(), v.end(), 0.0);
+
+    auto v0 = &v[0];
+    auto sz = v.size();
+    auto f0 = std::async(accum, v0, v0 + sz / 4,
+                         0.0);                                      // first quarter
+    auto f1 = std::async(accum, v0 + sz / 4, v0 + sz / 2, 0.0);     // second quarter
+    auto f2 = std::async(accum, v0 + sz / 2, v0 + sz * 3 / 4, 0.0); // third quarter
+    auto f3 = std::async(accum, v0 + sz * 3 / 4, v0 + sz, 0.0);     // fourth quarter
+    return f0.get() + f1.get() + f2.get() + f3.get();               // collect and combine the results
+}
+
 int main() {
     std::vector<double> v{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     double result = comp2(v);
     std::cout << "Result: " << result << std::endl;
+
+    result = comp4(v);
+    std::cout << "Result comp4: " << result << std::endl;
     return 0;
 }
