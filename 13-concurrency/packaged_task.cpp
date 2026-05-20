@@ -1,0 +1,33 @@
+#include <future>
+#include <iostream>
+#include <numeric>
+
+// simplify setting tasks connected w/ futures and promises
+double accum(double *beg, double *end, double init)
+// compute the sum of [beg:end) starting with the initial value init
+{
+    return std::accumulate(beg, end, init);
+}
+
+double comp2(std::vector<double> &v) {
+    using Task_type = double(double *, double *, double); // type of task
+
+    std::packaged_task<Task_type> pt0{accum};  // package the task (i.e., accum)
+    std::future<double> f0 = pt0.get_future(); // get hold of pt0’s future
+
+    std::packaged_task<Task_type> pt1{accum};  // package the task (i.e., accum)
+    std::future<double> f1 = pt1.get_future(); // get hold of pt1’s future
+
+    double *first = &v[0];
+    std::thread t1{std::move(pt0), first, first + v.size() / 2, 0};            // start a thread for pt0
+    std::thread t2{std::move(pt1), first + v.size() / 2, first + v.size(), 0}; // start a thread for pt1
+
+    return f0.get() + f1.get(); // get the results
+}
+
+int main() {
+    std::vector<double> v{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    double result = comp2(v);
+    std::cout << "Result: " << result << std::endl;
+    return 0;
+}
