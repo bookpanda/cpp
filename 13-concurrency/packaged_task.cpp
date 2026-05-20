@@ -37,6 +37,9 @@ double comp4(std::vector<double> &v) // spawn many tasks if v is large enough
 
     auto v0 = &v[0];
     auto sz = v.size();
+    // std::async does not guarantee that a new thread will be spawned. Depending on how you call it, it might execute
+    // your task synchronously on the current thread the moment you ask for the result, completely defeating the purpose
+    // of parallelism.
     auto f0 = std::async(accum, v0, v0 + sz / 4,
                          0.0);                                      // first quarter
     auto f1 = std::async(accum, v0 + sz / 4, v0 + sz / 2, 0.0);     // second quarter
