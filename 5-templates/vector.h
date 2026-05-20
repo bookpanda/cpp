@@ -16,6 +16,8 @@ template <typename T> class Vector {
     T &operator[](int i);
     const T &operator[](int i) const;
     int size() const { return sz; }
+    T *begin() const;
+    T *end() const;
 };
 
 // template definitions belong to the header file
@@ -37,5 +39,16 @@ template <typename T> const T &Vector<T>::operator[](int i) const {
         throw std::out_of_range{"Vector::operator[]"};
     return elem[i];
 }
+
+template <typename T> T *begin(Vector<T> &x) {
+    return x.size() ? &x[0] : nullptr;
+    // pointer to first element or nullptr
+}
+template <typename T> T *end(Vector<T> &x) {
+    return begin(x) + x.size(); // pointer to one-past-last element
+}
+
+template <typename T> T *Vector<T>::begin() const { return elem; }
+template <typename T> T *Vector<T>::end() const { return elem + (size() * sizeof(T)); }
 
 #endif
