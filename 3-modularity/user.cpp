@@ -60,6 +60,17 @@ void g() {
     use(vc);
 }
 
+Vector f() {
+    Vector x(1000);
+    Vector y(1000);
+    Vector z(1000);
+    z = x; // we get a copy
+    // std::move is a function that takes a value and returns a rvalue reference to that value
+    // rvalue = reference to a temporary value
+    y = std::move(x); // we get a move
+    return z;         // we get a move
+};
+
 int main(void) {
     Vector v(3);
     v[2] = 2;

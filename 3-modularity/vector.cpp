@@ -46,6 +46,13 @@ Vector &Vector::operator=(const Vector &a) // copy assignment
     return *this;
 }
 
+Vector::Vector(Vector &&a)
+    : elem{a.elem}, // "grab the elements" from a
+      sz{a.sz} {
+    a.elem = nullptr; // now a has no elements
+    a.sz = 0;
+}
+
 Vector::~Vector() { delete[] elem; }
 
 Vector_container::Vector_container(int s) : v(s) {} // Vector of s elements
