@@ -1,3 +1,4 @@
+#include "container.h"
 #include "vector.h"
 #include <cmath>
 #include <iostream>
@@ -48,6 +49,12 @@ void fs(double speed) {
     static_assert(local_max < C, "can't go that fast"); // OK  // ...
 }
 
+void use(Container &c) {
+    const int sz = c.size();
+    for (int i = 0; i != sz; ++i)
+        cout << c[i] << '\n';
+}
+
 int main(void) {
     Vector v(3);
     v[2] = 2;
@@ -55,5 +62,10 @@ int main(void) {
     // f(v);
     user(10);
     // test();
+
+    Vector v1 = {1, 2, 3, 4, 5};      // v1 has 5 elements
+    Vector v2 = {1.23, 3.45, 6.7, 8}; // v2 has 4 elements
+    use(&v1);
+    use(v2);
     return 0;
 }
