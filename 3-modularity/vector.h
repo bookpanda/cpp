@@ -9,7 +9,7 @@ class Vector {
     Vector(int s);
     Vector(std::initializer_list<double>); // initialize with a list of doubles
     double &operator[](int i);
-    int size();
+    int size() const;
     // void push_back(double); // add element at end, increasing the size by one
     ~Vector();
 
@@ -23,6 +23,7 @@ class Vector_container : public Container { // Vector_container implements Conta
 
   public:
     Vector_container(int s);
+    Vector_container(std::initializer_list<double>);
     ~Vector_container();
     double &operator[](int i);
     int size() const;
