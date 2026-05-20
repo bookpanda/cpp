@@ -4,6 +4,7 @@
 
 enum class Kind { circle, triangle, smiley };
 // Shape *read_shape(std::istream &is) // read shape descriptions from input stream is
+// When a unique_ptr goes out of scope, its own destructor is called automatically because it lives on the stack.
 std::unique_ptr<Shape> read_shape(std::istream &is) // read shape descriptions from input stream is
 {
     Kind k;
