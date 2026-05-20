@@ -19,7 +19,34 @@ template <typename Container, typename Value> Value sum(const Container &c, Valu
     return v;
 }
 
+template <typename T> void g(T x) { std::cout << x << " "; }
+void f() {} // do nothing
+
+template <typename T, typename... Tail> void f(T head, Tail... tail) {
+    g(head);    // do something to head
+    f(tail...); // try again with tail
+}
+
 int main(void) {
     Vector<int> v(10);
+
+    std::cout << "first: ";
+    f(1, 2.2, "hello");
+    std::cout << "\nsecond: ";
+    f(0.2, 'c', "yuck!", 0, 1, 2);
+    std::cout << "\n";
     return 0;
 }
+
+// alias template (using)
+template <typename C> using Element_type = typename C::value_type; // the type of C’s elements
+template <typename Container> void algo(Container &c) {
+    Vector<Element_type<Container>> vec;
+    // keep results here // ...
+}
+
+template <typename Key, typename Value> class Map {};
+
+template <typename Value> using String_map = Map<std::string, Value>;
+
+String_map<int> m; // m is a Map<std::string,int>

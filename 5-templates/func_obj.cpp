@@ -31,4 +31,9 @@ template <typename C, typename P> int count(const C &c, P pred) {
 void f(const Vector<int> &vec, const std::list<std::string> &lst, int x, const std::string &s) {
     std::cout << "number of values less than " << x << ": " << count(vec, Less_than<int>{x}) << '\n';
     std::cout << "number of values less than " << s << ": " << count(lst, Less_than<std::string>{s}) << '\n';
+
+    // lambda expression
+    std::cout << "number of values less than " << x << ": " << count(vec, [&](int a) { return a < x; }) << '\n';
+    std::cout << "number of values less than " << s << ": " << count(lst, [&](const std::string &a) { return a < s; })
+              << '\n';
 }
