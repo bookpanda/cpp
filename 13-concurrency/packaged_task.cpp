@@ -1,6 +1,8 @@
 #include <future>
 #include <iostream>
 #include <numeric>
+#include <thread>
+#include <vector>
 
 // simplify setting tasks connected w/ futures and promises
 double accum(double *beg, double *end, double init)
@@ -22,7 +24,10 @@ double comp2(std::vector<double> &v) {
     std::thread t1{std::move(pt0), first, first + v.size() / 2, 0};            // start a thread for pt0
     std::thread t2{std::move(pt1), first + v.size() / 2, first + v.size(), 0}; // start a thread for pt1
 
-    return f0.get() + f1.get(); // get the results
+    double result = f0.get() + f1.get(); // get the results
+    t1.join();
+    t2.join();
+    return result;
 }
 
 int main() {
