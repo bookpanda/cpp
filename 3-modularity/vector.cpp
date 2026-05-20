@@ -1,4 +1,5 @@
 #include "vector.h"
+#include <algorithm>
 #include <stdexcept>
 
 Vector::Vector(int s) {
@@ -8,6 +9,12 @@ Vector::Vector(int s) {
     sz = s;
 }
 
+Vector::Vector(std::initializer_list<double> lst) {
+    elem = new double[lst.size()];
+    std::copy(lst.begin(), lst.end(), elem);
+    sz = static_cast<int>(lst.size());
+}
+
 double &Vector::operator[](int i) {
     if (i < 0 || size() <= i)
         throw std::out_of_range{"Vector::operator[]"};
@@ -15,3 +22,12 @@ double &Vector::operator[](int i) {
 }
 
 int Vector::size() { return sz; }
+
+// void Vector::push_back(double d) {
+//     if (sz == cap())
+//         reserve(cap() * 2);
+//     elem[sz] = d;
+//     sz++;
+// }
+
+Vector::~Vector() { delete[] elem; }
