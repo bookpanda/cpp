@@ -1,6 +1,7 @@
 #include "vector.h"
 #include <cmath>
 #include <iostream>
+#include <numeric>
 #include <stdexcept>
 
 using namespace std;
@@ -20,10 +21,17 @@ double sqrt_sum(Vector &v) {
     return sum;
 }
 
+// noexcpet is a promise that the function will not throw an exception
+void user(int sz) noexcept {
+    Vector v(sz);
+    iota(&v[0], &v[sz - 1], 1); // fill v with 1,2,3,4...
+}
+
 int main(void) {
     Vector v(3);
     v[2] = 2;
     cout << sqrt_sum(v) << '\n';
-    f(v);
+    // f(v);
+    user(10);
     return 0;
 }
