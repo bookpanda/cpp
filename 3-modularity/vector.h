@@ -25,8 +25,8 @@ class Vector_container : public Container { // Vector_container implements Conta
     Vector_container(int s);
     Vector_container(std::initializer_list<double>);
     ~Vector_container();
-    double &operator[](int i);
-    int size() const;
+    double &operator[](int i) override;
+    int size() const override; // override = mark explicit override of a virtual function
 };
 
 #endif // VECTOR_H
