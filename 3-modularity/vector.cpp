@@ -29,3 +29,8 @@ int Vector::size() { return sz; }
 // }
 
 Vector::~Vector() { delete[] elem; }
+
+Vector_container::Vector_container(int s) : v(s) {} // Vector of s elements
+Vector_container::~Vector_container() {}
+double &Vector_container::operator[](int i) { return v[i]; }
+int Vector_container::size() const { return v.size(); }

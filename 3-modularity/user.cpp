@@ -55,6 +55,11 @@ void use(Container &c) {
         cout << c[i] << '\n';
 }
 
+void g() {
+    Vector_container vc{10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+    use(vc);
+}
+
 int main(void) {
     Vector v(3);
     v[2] = 2;
@@ -65,7 +70,5 @@ int main(void) {
 
     Vector v1 = {1, 2, 3, 4, 5};      // v1 has 5 elements
     Vector v2 = {1.23, 3.45, 6.7, 8}; // v2 has 4 elements
-    use(&v1);
-    use(v2);
     return 0;
 }

@@ -1,6 +1,7 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include "container.h"
 #include <initializer_list>
 
 class Vector {
@@ -15,6 +16,16 @@ class Vector {
   private:
     double *elem; // elem points to an array of sz doubles
     int sz;
+};
+
+class Vector_container : public Container { // Vector_container implements Container
+    Vector v;
+
+  public:
+    Vector_container(int s);
+    ~Vector_container();
+    double &operator[](int i);
+    int size() const;
 };
 
 #endif // VECTOR_H
