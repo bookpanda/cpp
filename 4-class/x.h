@@ -1,3 +1,6 @@
+#ifndef X_H
+#define X_H
+
 class X {
   public:
     X(int);                  // ‘‘ordinary constructor’’: create an object
@@ -8,3 +11,5 @@ class X {
     X &operator=(X &&);      // move assignment: clean up target and move
     ~X();                    // destructor: clean up // ...
 };
+
+#endif

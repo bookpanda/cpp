@@ -1,8 +1,8 @@
-#include <iostream>
-#include <vector>
-
 #ifndef SHAPE_H
 #define SHAPE_H
+
+#include <iostream>
+#include <vector>
 
 class Point {
   public:
