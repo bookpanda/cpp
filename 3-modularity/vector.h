@@ -12,6 +12,8 @@ class Vector {
     int size() const;
     // void push_back(double); // add element at end, increasing the size by one
     ~Vector();
+    Vector(const Vector &a);            // copy constructor
+    Vector &operator=(const Vector &a); // copy assignment
 
   private:
     double *elem; // elem points to an array of sz doubles

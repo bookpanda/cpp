@@ -28,6 +28,24 @@ int Vector::size() const { return sz; }
 //     sz++;
 // }
 
+Vector::Vector(const Vector &a) // copy constructor
+    : elem{new double[a.sz]},   // allocate space for elements
+      sz{a.sz} {
+    for (int i = 0; i != sz; ++i) // copy elements
+        elem[i] = a.elem[i];
+}
+
+Vector &Vector::operator=(const Vector &a) // copy assignment
+{
+    double *p = new double[a.sz];
+    for (int i = 0; i != a.sz; ++i)
+        p[i] = a.elem[i];
+    delete[] elem;
+    elem = p;
+    sz = a.sz;
+    return *this;
+}
+
 Vector::~Vector() { delete[] elem; }
 
 Vector_container::Vector_container(int s) : v(s) {} // Vector of s elements
