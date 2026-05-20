@@ -1,9 +1,12 @@
 #include "vector.h"
 #include <stdexcept>
 
-Vector::Vector(int s)
-    : elem{new double[s]}, sz{s} // initialize members
-{}
+Vector::Vector(int s) {
+    if (s < 0)
+        throw std::length_error{"Vector constructor: negative size"};
+    elem = new double[s]{};
+    sz = s;
+}
 
 double &Vector::operator[](int i) {
     if (i < 0 || size() <= i)
