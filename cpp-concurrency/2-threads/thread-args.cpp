@@ -52,6 +52,7 @@ X my_x; // &my_x is the object pointer
 std::thread t(&X::do_lengthy_work, &my_x);
 
 // std::unique_ptr must be moved into the thread, not copied (only 1 unique_ptr can point to an obj at a time)
+// std::unique_ptr is movable, but not copyable
 // std::thread is also movable, but not copyable
 class big_object {};
 void process_big_object(std::unique_ptr<big_object> p) {}
