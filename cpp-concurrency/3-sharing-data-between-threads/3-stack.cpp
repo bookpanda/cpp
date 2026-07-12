@@ -1,6 +1,7 @@
 #include <deque>
+#include <exception>
 #include <iostream>
-
+#include <memory>
 template <typename T, typename Container = std::deque<T>> class stack {
   public:
     explicit stack(const Container &);
@@ -18,6 +19,22 @@ template <typename T, typename Container = std::deque<T>> class stack {
     void pop();
     void swap(stack &&);
     template <class... Args> void emplace(Args &&...args);
+};
+
+struct empty_stack : std::exception {
+    const char *what() const noexcept;
+};
+template <typename T> class threadsafe_stack {
+  public:
+    threadsafe_stack();
+    threadsafe_stack(const threadsafe_stack &);
+    threadsafe_stack &operator=(const threadsafe_stack &) = delete;
+    void push(T new_value);
+    // ways to prevent data race of having top() and pop() as split functions (internal mutex can't help if func calls
+    // are separate aka can be interleaved with other threads)
+    std::shared_ptr<T> pop(); // pop returns a shared_ptr to the value
+    void pop(T &value);       // pop modifies the value by reference
+    bool empty() const;
 };
 
 void do_something(const int &value) { std::cout << value << std::endl; }
