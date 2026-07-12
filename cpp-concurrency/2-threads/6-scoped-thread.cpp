@@ -9,6 +9,7 @@ class scoped_thread {
         if (!t.joinable())
             throw std::logic_error("No thread");
     }
+    // no need to check if t.joinable() here because the constructor already checks it
     ~scoped_thread() { t.join(); }
     scoped_thread(scoped_thread const &) = delete;
     scoped_thread &operator=(scoped_thread const &) = delete;
