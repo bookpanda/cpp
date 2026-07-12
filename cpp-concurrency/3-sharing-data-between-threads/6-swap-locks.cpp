@@ -18,6 +18,12 @@ class X {
         // std::lock_guard<std::mutex> lock_b(rhs.m, std::adopt_lock);
         // swap(lhs.some_detail, rhs.some_detail);
 
+        // Alt w/ C++11's unique_lock (slower than lock_guard/scoped_lock but more flexible)
+        // std::unique_lock<std::mutex> lock_a(lhs.m, std::defer_lock);
+        // std::unique_lock<std::mutex> lock_b(rhs.m, std::defer_lock);
+        // std::lock(lock_a, lock_b);
+        // swap(lhs.some_detail, rhs.some_detail);
+
         // Alt w/ C++17's scoped_lock
         std::scoped_lock guard(lhs.m, rhs.m);
         swap(lhs.some_detail, rhs.some_detail);
