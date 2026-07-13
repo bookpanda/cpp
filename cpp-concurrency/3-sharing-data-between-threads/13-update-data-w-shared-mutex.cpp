@@ -18,7 +18,7 @@ class dns_cache {
   public:
     // many threads can read at same time
     dns_entry find_entry(std::string const &domain) const {
-        std::shared_lock<std::shared_mutex> lk(entry_mutex);
+        std::shared_lock<std::shared_mutex> lk(entry_mutex); // also RAII wrapper for shared_mutex
         std::map<std::string, dns_entry>::const_iterator const it = entries.find(domain);
         return (it == entries.end()) ? dns_entry() : it->second;
     }
