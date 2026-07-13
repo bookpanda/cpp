@@ -5,6 +5,7 @@
 
 template <typename T> class threadsafe_queue {
   private:
+    // mutable = this member may change for implementation reasons, even in const methods
     mutable std::mutex mut;
     std::queue<T> data_queue;
     std::condition_variable data_cond;
@@ -49,6 +50,7 @@ template <typename T> class threadsafe_queue {
         data_queue.pop();
         return res;
     }
+    // const = promises not to change the queue's logical state. But locking mut does change the mutex internally
     bool empty() const {
         std::lock_guard<std::mutex> lk(mut);
         return data_queue.empty();

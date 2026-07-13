@@ -31,6 +31,10 @@ void data_preparation_thread() {
         data_cond.notify_one();
     }
 }
+
+// can have many threads waiting on the same condition variable
+// when notified, one thread will wake up and continue
+// other threads will continue waiting
 void data_processing_thread() {
     while (true) {
         // can't use lock_guard here because we need to unlock the mutex in the wait call
