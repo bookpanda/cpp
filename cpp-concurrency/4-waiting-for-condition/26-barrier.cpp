@@ -42,10 +42,14 @@ struct data_source {
                         data_block current_block = source.get_next_data_block();
                         chunks = divide_into_chunks(current_block, num_threads);
                     }
+                    // important that no threads proceed until all threads are ready.
+                    // everyone waiting for thread 0
                     sync.arrive_and_wait();
                     result.set_chunk(i, num_threads, process(chunks[i]));
+                    // thread 0 waiting for all threads to finish processing their chunks
                     sync.arrive_and_wait();
                     if (!i) {
+                        // thread 0 writes the result to the sink
                         sink.write_data(result.value);
                     }
                 }
