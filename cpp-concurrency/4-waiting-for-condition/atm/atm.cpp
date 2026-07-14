@@ -1,5 +1,7 @@
 #include "message/message.h"
 
+using namespace messaging;
+
 class atm {
     messaging::receiver incoming;
     messaging::sender bank;

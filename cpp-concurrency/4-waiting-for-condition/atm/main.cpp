@@ -1,7 +1,10 @@
 #include "atm.cpp"
 #include "bank.cpp"
 #include "ui.cpp"
+
 #include <thread>
+
+using namespace messaging;
 
 int main() {
     bank_machine bank;

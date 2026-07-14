@@ -1,3 +1,7 @@
+#include "message/message.h"
+
+using namespace messaging;
+
 class bank_machine {
     messaging::receiver incoming;
     unsigned balance;

@@ -1,5 +1,13 @@
+#include "message/message.h"
+
+#include <iostream>
+#include <mutex>
+
+using namespace messaging;
+
 class interface_machine {
     messaging::receiver incoming;
+    std::mutex iom;
 
   public:
     void done() { get_sender().send(messaging::close_queue()); }
