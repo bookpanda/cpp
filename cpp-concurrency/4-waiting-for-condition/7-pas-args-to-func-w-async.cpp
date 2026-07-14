@@ -32,6 +32,11 @@ class move_only {
 };
 auto f5 = std::async(move_only());
 
+// With std::launch::async, you don't create a std::thread yourself. The runtime:
+// 1. Starts execution (new thread or thread pool — implementation-defined)
+// 2. Stores the result in the returned std::future
+// 3. Cleans up when the future is destroyed (after get()/wait())
+// You get a future back; the threading details are hidden.
 int main() {
     // launch::async = func must be run on its own thread
     auto f67 = std::async(std::launch::async, Y(), 1.2);
