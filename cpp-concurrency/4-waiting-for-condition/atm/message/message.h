@@ -12,6 +12,11 @@ struct message_base {
 };
 template <typename Msg> struct wrapped_message : message_base {
     Msg contents;
+    // explicit on a constructor means the compiler cannot use that constructor for implicit conversions.
+    // wrapped_message<Msg> w = m;                          // error — no implicit conversion
+    // wrapped_message<Msg> w(m);                           // OK
+    // wrapped_message<Msg> w{ m };                         // OK
+    // auto w = std::make_shared<wrapped_message<Msg>>(m);  // OK — explicit call
     explicit wrapped_message(Msg const &contents_) : contents(contents_) {}
 };
 
@@ -70,6 +75,11 @@ template <typename PreviousDispatcher, typename Msg, typename Func> class Templa
     }
     template <typename OtherMsg, typename OtherFunc>
     TemplateDispatcher<TemplateDispatcher, OtherMsg, OtherFunc> handle(OtherFunc &&of) {
+        // std::forward is conditional casting — it forwards a value to another function while preserving whether it was
+        // an lvalue or rvalue.
+        // lvalue → lvalue (copy the lambda/functor)
+        // rvalue → rvalue (move the lambda/functor)
+
         return TemplateDispatcher<TemplateDispatcher, OtherMsg, OtherFunc>(q, this, std::forward<OtherFunc>(of));
     }
     ~TemplateDispatcher() noexcept(false) {
