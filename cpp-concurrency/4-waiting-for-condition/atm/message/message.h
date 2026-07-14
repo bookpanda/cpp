@@ -47,6 +47,8 @@ template <typename PreviousDispatcher, typename Msg, typename Func> class Templa
     bool chained;
     TemplateDispatcher(TemplateDispatcher const &) = delete;
     TemplateDispatcher &operator=(TemplateDispatcher const &) = delete;
+    // friend = any TemplateDispatcher<...> instantiation may access this class's private members.
+    // friend = lets handlers in a chain call each other's private dispatch, chained, etc.
     template <typename Dispatcher, typename OtherMsg, typename OtherFunc> friend class TemplateDispatcher;
     void wait_and_dispatch() {
         for (;;) {
@@ -56,6 +58,7 @@ template <typename PreviousDispatcher, typename Msg, typename Func> class Templa
         }
     }
     bool dispatch(std::shared_ptr<message_base> const &msg) {
+        // If the message is not a wrapped_message<Msg>, the dynamic_cast fails and the if branch is skipped.
         if (wrapped_message<Msg> *wrapper = dynamic_cast<wrapped_message<Msg> *>(msg.get())) {
             f(wrapper->contents);
             return true;
@@ -80,6 +83,7 @@ template <typename PreviousDispatcher, typename Msg, typename Func> class Templa
         // lvalue → lvalue (copy the lambda/functor)
         // rvalue → rvalue (move the lambda/functor)
 
+        // friend used here (this)
         return TemplateDispatcher<TemplateDispatcher, OtherMsg, OtherFunc>(q, this, std::forward<OtherFunc>(of));
     }
     ~TemplateDispatcher() noexcept(false) {
@@ -116,7 +120,7 @@ class dispatcher {
         return TemplateDispatcher<dispatcher, Message, Func>(q, this, std::forward<Func>(f));
     }
     ~dispatcher() noexcept(false) {
-        if (!chained) {
+        if (!chained) { // chained = false → this is the last .handle<>() → start waiting for messages
             wait_and_dispatch();
         }
     }

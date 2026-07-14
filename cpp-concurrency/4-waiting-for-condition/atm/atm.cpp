@@ -99,6 +99,7 @@ class atm {
         state = &atm::waiting_for_card;
         try {
             for (;;) {
+                // pointer to a member function of atm
                 (this->*state)();
             }
         } catch (messaging::close_queue const &) {
@@ -106,3 +107,9 @@ class atm {
     }
     messaging::sender get_sender() { return incoming; }
 };
+
+// .handle<A>()  →  chained=true  (another handler coming)
+// .handle<B>()  →  chained=true
+// .handle<C>()  →  chained=false (last one)
+// ~C()           →  wait_and_dispatch() runs
+//                  message arrives → try C, else B, else A, else dispatcher
