@@ -17,7 +17,8 @@ void read_y_then_x() {
         ++z;
 }
 
-// sync-with: store_y sync-with load_y
+// sync-with (release-acquire): store_y sync-with load_y
+// if either store_y or load_y is relaxed, then no sync-with, everything breaks
 
 // summary: store_x -> store_y sync-with load_y -> load_x
 
