@@ -2,6 +2,8 @@
 #include <atomic>
 #include <thread>
 
+// x can be non-atomic since fences still enforce ordering: store_x -> store_y and load_y -> load_x
+// and there's no data race on x
 std::atomic<bool> x, y;
 std::atomic<int> z;
 
