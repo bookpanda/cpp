@@ -1,0 +1,34 @@
+#include <assert.h>
+#include <atomic>
+#include <thread>
+
+std::atomic<bool> x, y;
+std::atomic<int> z;
+
+void write_x_then_y() {
+    x.store(true, std::memory_order_relaxed);
+    std::atomic_thread_fence(std::memory_order_release);
+    y.store(true, std::memory_order_relaxed);
+}
+
+void read_y_then_x() {
+    // load_y is guaranteed to see result of store_y since it loops until it sees true
+    // load_y (acq) sees result of a store after a release fence, so release fence -> load_y (syncs-with)
+    // load_y is before acquire fence and sees result of store_y (release), so store_y -> acquire fence (syncs-with)
+    while (!y.load(std::memory_order_relaxed))
+        ;
+    std::atomic_thread_fence(std::memory_order_acquire);
+    if (x.load(std::memory_order_relaxed))
+        ++z;
+}
+
+int main() {
+    x = false;
+    y = false;
+    z = 0;
+    std::thread a(write_x_then_y);
+    std::thread b(read_y_then_x);
+    a.join();
+    b.join();
+    assert(z.load() != 0);
+}
