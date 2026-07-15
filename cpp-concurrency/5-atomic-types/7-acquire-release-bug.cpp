@@ -41,6 +41,6 @@ int main() {
     b.join();
     c.join();
     d.join();
-    assert(z.load() != 0);
+    assert(z.load() != 2);
     cout << "z: " << z.load() << endl;
 }
