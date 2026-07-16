@@ -1,39 +1,45 @@
 #include <memory>
+#include <mutex>
 
-// this can be made thread-safe by adding locks, and it's much better than the previous version:
-template <typename T> class queue {
+template <typename T> class threadsafe_queue {
   private:
     struct node {
         std::shared_ptr<T> data;
         std::unique_ptr<node> next;
     };
+    std::mutex head_mutex;
     std::unique_ptr<node> head;
+    std::mutex tail_mutex;
     node *tail;
-
-  public:
-    queue() : head(new node), tail(head.get()) {}
-    queue(const queue &other) = delete;
-    queue &operator=(const queue &other) = delete;
-    // try_pop() now accesses tail only at beginning, so lock is short-lived
-    std::shared_ptr<T> try_pop() {
-        if (head.get() == tail) {
-            return std::shared_ptr<T>();
+    node *get_tail() {
+        std::lock_guard<std::mutex> tail_lock(tail_mutex);
+        return tail;
+    }
+    std::unique_ptr<node> pop_head() {
+        std::lock_guard<std::mutex> head_lock(head_mutex);
+        if (head.get() == get_tail()) {
+            return nullptr;
         }
-        std::shared_ptr<T> const res(head->data);
         std::unique_ptr<node> old_head = std::move(head);
         head = std::move(old_head->next);
-        return res;
+        return old_head;
     }
-    // push() now accesses only tail, no head
+
+  public:
+    threadsafe_queue() : head(new node), tail(head.get()) {}
+    threadsafe_queue(const threadsafe_queue &other) = delete;
+    threadsafe_queue &operator=(const threadsafe_queue &other) = delete;
+    std::shared_ptr<T> try_pop() {
+        std::unique_ptr<node> old_head = pop_head();
+        return old_head ? old_head->data : std::shared_ptr<T>();
+    }
     void push(T new_value) {
         std::shared_ptr<T> new_data(std::make_shared<T>(std::move(new_value)));
-        std::unique_ptr<node> p(new node); // create new dummy node
-        tail->data = new_data;             // populate current dummy node with the new data
+        std::unique_ptr<node> p(new node);
         node *const new_tail = p.get();
+        std::lock_guard<std::mutex> tail_lock(tail_mutex);
+        tail->data = new_data;
         tail->next = std::move(p);
         tail = new_tail;
     }
-    // adding dummy node = try_pop() and push() are never operating on the same node, so you no longer need an
-    // overarching mutex
-    // - can have 1 mutex for head and 1 for tail
 };
