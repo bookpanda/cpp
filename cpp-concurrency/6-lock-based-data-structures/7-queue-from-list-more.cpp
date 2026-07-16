@@ -59,7 +59,8 @@ template <typename T> class threadsafe_queue {
 
     std::shared_ptr<T> try_pop() {
         std::unique_ptr<node> old_head = try_pop_head();
-        return old_head ? old_head->data : std::shared_ptr<T>();
+        return old_head ? old_head->data : std::shared_ptr<T>(); // copy shared_ptr OUT
+        // old_head destroyed here → node destroyed → node's data member destroyed too
     }
     bool try_pop(T &value) {
         std::unique_ptr<node> const old_head = try_pop_head(value);
