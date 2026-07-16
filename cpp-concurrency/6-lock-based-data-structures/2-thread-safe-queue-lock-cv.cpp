@@ -23,6 +23,14 @@ template <typename T> class threadsafe_queue {
         data_queue.pop();
     }
     std::shared_ptr<T> wait_and_pop() {
+        // when the thread doing push() calls notify_one(), one of the threads waiting on wait_and_pop() will be
+        // notified if the woken up thread throws (e.g. when initing shared_ptr), then none of the other waiting threads
+        // will be woken you can solve in many ways:
+        // 1. use notiy_all() instead of notify_one(), but at cost of most of them going back to sleep when they find
+        // queue empty
+        // 2. have wait_and_pop() call notify_one() if exception is thrown
+        // 3. move shared_ptr init to push() and store shared_ptr in queue instead of value -> see in
+        // 3-thread-safe-queue-lock-cv.cpp
         std::unique_lock<std::mutex> lk(mut);
         data_cond.wait(lk, [this] { return !data_queue.empty(); });
         std::shared_ptr<T> res(std::make_shared<T>(std::move(data_queue.front())));
