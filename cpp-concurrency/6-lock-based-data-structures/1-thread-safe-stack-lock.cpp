@@ -4,7 +4,12 @@
 #include <stack>
 
 struct empty_stack : std::exception {
-    const char *what() const throw();
+    // what() — overrides the virtual method that returns a human-readable error message
+    // throw() — old syntax meaning "this function won't throw" (precursor to noexcept)
+    // const char *what() const throw();
+
+    // Modern C++ would write:
+    const char *what() const noexcept override { return "empty stack"; }
 };
 
 template <typename T> class threadsafe_stack {
