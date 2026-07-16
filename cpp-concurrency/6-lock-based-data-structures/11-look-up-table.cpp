@@ -5,20 +5,22 @@
 #include <utility>
 #include <vector>
 
+#include <map>
+
 template <typename Key, typename Value, typename Hash = std::hash<Key>> class threadsafe_lookup_table {
   private:
     class bucket_type {
       private:
         typedef std::pair<Key, Value> bucket_value;
         typedef std::list<bucket_value> bucket_data;
-        typedef typename bucket_data::iterator bucket_iterator;
         bucket_data data;
         mutable std::shared_mutex mutex;
+
+      public:
+        typedef typename bucket_data::iterator bucket_iterator;
         bucket_iterator find_entry_for(Key const &key) const {
             return std::find_if(data.begin(), data.end(), [&](bucket_value const &item) { return item.first == key; });
         }
-
-      public:
         Value value_for(Key const &key, Value const &default_value) const {
             std::shared_lock<std::shared_mutex> lock(mutex);
             bucket_iterator const found_entry = find_entry_for(key);
@@ -41,6 +43,22 @@ template <typename Key, typename Value, typename Hash = std::hash<Key>> class th
             }
         }
     };
+
+    std::map<Key, Value> get_map() const {
+        std::vector<std::unique_lock<std::shared_mutex>> locks;
+        for (unsigned i = 0; i < buckets.size(); ++i) {
+            locks.push_back(std::unique_lock<std::shared_mutex>(buckets[i].mutex));
+        }
+        std::map<Key, Value> res;
+        for (unsigned i = 0; i < buckets.size(); ++i) {
+            for (typename bucket_type::bucket_iterator it = buckets[i].data.begin(); it != buckets[i].data.end();
+                 ++it) {
+                res.insert(*it);
+            }
+        }
+        return res;
+    }
+
     std::vector<std::unique_ptr<bucket_type>> buckets;
     Hash hasher;
     bucket_type &get_bucket(Key const &key) const {
