@@ -24,7 +24,7 @@ template <typename T> class threadsafe_queue {
     std::unique_lock<std::mutex> wait_for_data() {
         std::unique_lock<std::mutex> head_lock(head_mutex);
         data_cond.wait(head_lock, [&] { return head.get() != get_tail(); });
-        return std::move(head_lock);
+        return std::move(head_lock); // returns lock to caller, ensuring same lock is held while data is modified
     }
     std::unique_ptr<node> wait_pop_head() {
         std::unique_lock<std::mutex> head_lock(wait_for_data());
@@ -36,18 +36,38 @@ template <typename T> class threadsafe_queue {
         return pop_head();
     }
 
+    std::unique_ptr<node> try_pop_head() {
+        std::lock_guard<std::mutex> head_lock(head_mutex);
+        if (head.get() == get_tail()) {
+            return std::unique_ptr<node>();
+        }
+        return pop_head();
+    }
+    std::unique_ptr<node> try_pop_head(T &value) {
+        std::lock_guard<std::mutex> head_lock(head_mutex);
+        if (head.get() == get_tail()) {
+            return std::unique_ptr<node>();
+        }
+        value = std::move(*head->data);
+        return pop_head();
+    }
+
   public:
     threadsafe_queue() : head(new node), tail(head.get()) {}
     threadsafe_queue(const threadsafe_queue &other) = delete;
     threadsafe_queue &operator=(const threadsafe_queue &other) = delete;
 
     std::shared_ptr<T> try_pop() {
-        // pop_head() locks both head_lock and tail_lock
-        // if a try_pop() on T1 is concurrent with a push() on T2, 2 cases:
-        // 1. get_tail() before push(): tail points to old dummy node
-        // 2. get_tail() after push(): tail points to new dummy node
-        std::unique_ptr<node> old_head = pop_head();
+        std::unique_ptr<node> old_head = try_pop_head();
         return old_head ? old_head->data : std::shared_ptr<T>();
+    }
+    bool try_pop(T &value) {
+        std::unique_ptr<node> const old_head = try_pop_head(value);
+        return old_head;
+    }
+    bool empty() {
+        std::lock_guard<std::mutex> head_lock(head_mutex);
+        return (head.get() == get_tail());
     }
 
     std::shared_ptr<T> wait_and_pop() {
