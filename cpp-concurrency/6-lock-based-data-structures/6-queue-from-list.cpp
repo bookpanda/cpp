@@ -16,6 +16,9 @@ template <typename T> class threadsafe_queue {
         return tail;
     }
     std::unique_ptr<node> pop_head() {
+        // head_mutex must be acquired before tail_mutex
+        // if not, can be cases where 2 threads call pop_head(), both acquires tail_mutex, but 1 of them stuck between
+        // get_tail() and head_mutex.
         std::lock_guard<std::mutex> head_lock(head_mutex);
         if (head.get() == get_tail()) {
             return nullptr;
@@ -30,6 +33,10 @@ template <typename T> class threadsafe_queue {
     threadsafe_queue(const threadsafe_queue &other) = delete;
     threadsafe_queue &operator=(const threadsafe_queue &other) = delete;
     std::shared_ptr<T> try_pop() {
+        // pop_head() locks both head_lock and tail_lock
+        // if a try_pop() on T1 is concurrent with a push() on T2, 2 cases:
+        // 1. get_tail() before push(): tail points to old dummy node
+        // 2. get_tail() after push(): tail points to new dummy node
         std::unique_ptr<node> old_head = pop_head();
         return old_head ? old_head->data : std::shared_ptr<T>();
     }
@@ -37,6 +44,7 @@ template <typename T> class threadsafe_queue {
         std::shared_ptr<T> new_data(std::make_shared<T>(std::move(new_value)));
         std::unique_ptr<node> p(new node);
         node *const new_tail = p.get();
+        // blocks until tail_mutex is free, then acquires it.
         std::lock_guard<std::mutex> tail_lock(tail_mutex);
         tail->data = new_data;
         tail->next = std::move(p);
