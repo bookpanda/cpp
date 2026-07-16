@@ -10,6 +10,7 @@ template <typename T> class threadsafe_queue {
     std::mutex head_mutex;
     std::unique_ptr<node> head;
     std::mutex tail_mutex;
+    std::condition_variable data_cond;
     node *tail;
     node *get_tail() {
         std::lock_guard<std::mutex> tail_lock(tail_mutex);
@@ -44,16 +45,16 @@ template <typename T> class threadsafe_queue {
         return old_head ? old_head->data : std::shared_ptr<T>();
     }
     void push(T new_value) {
-        // allocate mem for new_value and p can throw, but both use smart ptrs, so they'll be freed if exception is
-        // throw
         std::shared_ptr<T> new_data(std::make_shared<T>(std::move(new_value)));
         std::unique_ptr<node> p(new node);
-        node *const new_tail = p.get();
-        // blocks until tail_mutex is free, then acquires it.
-        std::lock_guard<std::mutex> tail_lock(tail_mutex);
-        // once lock acquired, none of remaining ops can throw, so push() is exception-safe
-        tail->data = new_data;
-        tail->next = std::move(p);
-        tail = new_tail;
+        {
+            std::lock_guard<std::mutex> tail_lock(tail_mutex);
+            tail->data = new_data;
+            node *const new_tail = p.get();
+            tail->next = std::move(p);
+            tail = new_tail;
+        }
+        // notify AFTER tail_lock released so that waiting threads don't have to wait for tail_lock
+        data_cond.notify_one();
     }
 };
