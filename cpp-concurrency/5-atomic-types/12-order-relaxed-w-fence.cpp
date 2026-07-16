@@ -2,6 +2,9 @@
 #include <atomic>
 #include <thread>
 
+// if non-atomic op A is sequenced before atomic op B, and op B is happens before op C on another thread,
+// then op A happens before op C
+
 // x can be non-atomic since fences still enforce ordering: store_x -> store_y and load_y -> load_x
 // and there's no data race on x
 std::atomic<bool> x, y;
