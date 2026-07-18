@@ -26,8 +26,44 @@ template <typename T> class lock_free_queue {
             next.ptr = nullptr;
             next.external_count = 0;
         }
-        void release_ref();
+        void release_ref() {
+            node_counter old_counter = count.load(std::memory_order_relaxed);
+            node_counter new_counter;
+            do {
+                new_counter = old_counter;
+                --new_counter.internal_count;
+            } while (!count.compare_exchange_strong(old_counter, new_counter, std::memory_order_acquire,
+                                                    std::memory_order_relaxed));
+            if (!new_counter.internal_count && !new_counter.external_counters) {
+                delete this;
+            }
+        };
     };
+    static void increase_external_count(std::atomic<counted_node_ptr> &counter, counted_node_ptr &old_counter) {
+        counted_node_ptr new_counter;
+        do {
+            new_counter = old_counter;
+            ++new_counter.external_count;
+        } while (!counter.compare_exchange_strong(old_counter, new_counter, std::memory_order_acquire,
+                                                  std::memory_order_relaxed));
+        old_counter.external_count = new_counter.external_count;
+    }
+    static void free_external_counter(counted_node_ptr &old_node_ptr) {
+        node *const ptr = old_node_ptr.ptr;
+        int const count_increase = old_node_ptr.external_count - 2;
+        node_counter old_counter = ptr->count.load(std::memory_order_relaxed);
+        node_counter new_counter;
+        do {
+            new_counter = old_counter;
+            --new_counter.external_counters;
+            new_counter.internal_count += count_increase;
+            // updates the 2 counters in one atomic operation (compare_exchange_strong)
+        } while (!ptr->count.compare_exchange_strong(old_counter, new_counter, std::memory_order_acquire,
+                                                     std::memory_order_relaxed));
+        if (!new_counter.internal_count && !new_counter.external_counters) {
+            delete ptr;
+        }
+    }
 
   public:
     void push(T new_value) {
@@ -54,11 +90,12 @@ template <typename T> class lock_free_queue {
         for (;;) {
             increase_external_count(head, old_head);
             node *const ptr = old_head.ptr;
-            if (ptr == tail.load().ptr) {
+            if (ptr == tail.load().ptr) { // queue is empty (only 1 dummy node)
                 ptr->release_ref();
                 return std::unique_ptr<T>();
             }
             if (head.compare_exchange_strong(old_head, ptr->next)) {
+                // you're the only thread with access to this node
                 T *const res = ptr->data.exchange(nullptr);
                 free_external_counter(old_head);
                 return std::unique_ptr<T>(res);
