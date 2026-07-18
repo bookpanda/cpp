@@ -40,7 +40,7 @@ template <typename T> class lock_free_queue {
     }
     void push(T new_value) {
         std::shared_ptr<T> new_data(std::make_shared<T>(new_value));
-        node *p = new node;
+        node *p = new node; // new dummy node
         node *const old_tail = tail.load();
         old_tail->data.swap(new_data);
         old_tail->next = p;
