@@ -16,6 +16,7 @@ template <typename T> class lock_free_stack {
             nodes = next;
         }
     }
+    // read the pdf on page 217
     void try_reclaim(node *old_head) {
         if (threads_in_pop == 1) { // it's the last thread calling pop
             node *nodes_to_delete = to_be_deleted.exchange(nullptr);
