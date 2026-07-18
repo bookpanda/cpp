@@ -17,15 +17,17 @@ template <typename T> class lock_free_stack {
         }
     }
     void try_reclaim(node *old_head) {
-        if (threads_in_pop == 1) {
+        if (threads_in_pop == 1) { // it's the last thread calling pop
             node *nodes_to_delete = to_be_deleted.exchange(nullptr);
-            if (!--threads_in_pop) {
+            if (!--threads_in_pop) { // may also be safe to delete pending nodes
                 delete_nodes(nodes_to_delete);
-            } else if (nodes_to_delete) {
+            } else if (nodes_to_delete) { // not safe to reclaim nodes, chain them back to pending list
+                // can happen e.g. T2 calls pop() when T1 between checking threads_in_pop==1 and !--threads_in_pop
                 chain_pending_nodes(nodes_to_delete);
             }
+            // can delete old_head now
             delete old_head;
-        } else {
+        } else { // chain node to pending list
             chain_pending_node(old_head);
             --threads_in_pop;
         }
