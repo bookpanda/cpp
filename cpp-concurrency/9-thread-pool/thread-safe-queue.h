@@ -1,3 +1,6 @@
+#ifndef THREADSAFE_QUEUE_H
+#define THREADSAFE_QUEUE_H
+
 #include <memory>
 #include <mutex>
 
@@ -91,3 +94,5 @@ template <typename T> class threadsafe_queue {
         data_cond.notify_one();
     }
 };
+
+#endif
