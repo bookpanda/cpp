@@ -39,6 +39,7 @@ template <typename Iterator, typename T> T parallel_accumulate(Iterator first, I
         block_start = block_end;
     }
 
+    // last block of work is done by the main thread
     // can throw
     accumulate_block<Iterator, T>()(block_start, last, results[num_threads - 1]);
     std::for_each(threads.begin(), threads.end(), std::mem_fn(&std::thread::join));
