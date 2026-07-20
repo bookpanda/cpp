@@ -1,3 +1,4 @@
+#include "thread-safe-queue.h"
 #include <future>
 #include <memory>
 #include <thread>
@@ -28,7 +29,7 @@ class function_wrapper {
     function_wrapper &operator=(const function_wrapper &) = delete;
 };
 class thread_pool {
-    thread_safe_queue<function_wrapper> work_queue;
+    threadsafe_queue<function_wrapper> work_queue;
     std::atomic_bool done;
     void worker_thread() {
         while (!done) {
@@ -46,7 +47,17 @@ class thread_pool {
         typedef typename std::result_of<FunctionType()>::type result_type;
         std::packaged_task<result_type()> task(std::move(f));
         std::future<result_type> res(task.get_future());
+        // move() since packaged_task is not copyable
         work_queue.push(std::move(task));
         return res;
     } // rest as before
+
+    void run_pending_task() {
+        function_wrapper task;
+        if (work_queue.try_pop(task)) {
+            task();
+        } else {
+            std::this_thread::yield();
+        }
+    }
 };
