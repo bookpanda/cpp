@@ -53,6 +53,8 @@ class thread_pool {
     } // rest as before
 
     void run_pending_task() {
+        // have waiting threads run this to avoid deadlocks (waiting threads wait for work that has no available
+        // workers)
         function_wrapper task;
         if (work_queue.try_pop(task)) {
             task();

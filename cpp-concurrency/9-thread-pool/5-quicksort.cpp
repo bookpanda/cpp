@@ -19,12 +19,14 @@ template <typename T> struct sorter {
 
         std::list<T> new_lower_chunk;
         new_lower_chunk.splice(new_lower_chunk.end(), chunk_data, chunk_data.begin(), divide_point);
+        // bind() binds this pointer to do_sort() + supply new_lower_chunk
         std::future<std::list<T>> new_lower =
             pool.submit(std::bind(&sorter::do_sort, this, std::move(new_lower_chunk)));
 
         std::list<T> new_higher(do_sort(chunk_data));
         result.splice(result.end(), new_higher);
         while (new_lower.wait_for(std::chrono::seconds(0)) == std::future_status::timeout) {
+            // avoids deadlock by having waiting threads help out
             pool.run_pending_task();
         }
         result.splice(result.begin(), new_lower.get());
