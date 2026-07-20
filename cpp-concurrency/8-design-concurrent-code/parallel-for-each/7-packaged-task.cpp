@@ -36,6 +36,8 @@ template <typename Iterator, typename Func> void parallel_for_each(Iterator firs
     for (unsigned long i = 0; i < (num_threads - 1); ++i) {
         Iterator block_end = block_start;
         std::advance(block_end, block_size);
+        // [=]: capture by value (copy): every variable the lambda uses from the outer scope is copied into the lambda
+        // when it’s created.
         std::packaged_task<void(void)> task([=]() { std::for_each(block_start, block_end, f); });
         futures[i] = task.get_future();
         threads[i] = std::thread(std::move(task));

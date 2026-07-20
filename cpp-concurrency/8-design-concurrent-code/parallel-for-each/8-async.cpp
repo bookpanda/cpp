@@ -3,6 +3,8 @@
 #include <future>
 #include <iterator>
 
+// package_task way splits into N threads
+// async way: split recursively, don't know how many threads lib will use
 template <typename Iterator, typename Func> void parallel_for_each(Iterator first, Iterator last, Func f) {
     unsigned long const length = std::distance(first, last);
     if (!length)
