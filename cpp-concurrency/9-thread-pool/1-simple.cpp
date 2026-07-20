@@ -17,6 +17,7 @@ class join_threads {
 class thread_pool {
     std::atomic_bool done;
     threadsafe_queue<std::function<void()>> work_queue;
+    // done, work_queue must be declared before threads so that threads are destroyed before them
     std::vector<std::thread> threads;
     join_threads joiner;
     void worker_thread() {
