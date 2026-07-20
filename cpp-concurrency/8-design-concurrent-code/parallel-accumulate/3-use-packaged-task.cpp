@@ -35,6 +35,8 @@ template <typename Iterator, typename T> T parallel_accumulate(Iterator first, I
         threads[i] = std::thread(std::move(task), block_start, block_end);
         block_start = block_end;
     }
+    // only problem left is leaking threads: occurs if exception is thrown between when you spawn first thread and when
+    // you've joined them alk, fixed in 3-exception-safe.cpp
 
     // last block of work is done by the main thread
     T last_result = accumulate_block<Iterator, T>()(block_start, last);
