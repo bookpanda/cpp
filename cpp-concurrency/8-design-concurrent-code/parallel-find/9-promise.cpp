@@ -22,12 +22,14 @@ Iterator parallel_find(Iterator first, Iterator last, MatchType match) {
                 for (; (begin != end) && !done_flag->load(); ++begin) {
                     if (*begin == match) {
                         result->set_value(begin);
+                        // set value triggers done_flag
                         done_flag->store(true);
                         return;
                     }
                 }
             } catch (...) {
                 try {
+                    // exception triggers done_flag
                     result->set_exception(std::current_exception());
                     done_flag->store(true);
                 } catch (...) {
@@ -38,15 +40,19 @@ Iterator parallel_find(Iterator first, Iterator last, MatchType match) {
     unsigned long const length = std::distance(first, last);
     if (!length)
         return last;
+
     unsigned long const min_per_thread = 25;
     unsigned long const max_threads = (length + min_per_thread - 1) / min_per_thread;
     unsigned long const hardware_threads = std::thread::hardware_concurrency();
     unsigned long const num_threads = std::min(hardware_threads != 0 ? hardware_threads : 2, max_threads);
     unsigned long const block_size = length / num_threads;
+    // single promise for all threads to store the value/exception
+    // need to wait for all threads to finish before checking results
     std::promise<Iterator> result;
     std::atomic<bool> done_flag(false);
     std::vector<std::thread> threads(num_threads - 1);
     {
+        // this enclosing forces join_threads to call destructor, which joins all threads
         join_threads joiner(threads);
         Iterator block_start = first;
         for (unsigned long i = 0; i < (num_threads - 1); ++i) {
