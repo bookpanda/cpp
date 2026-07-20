@@ -12,6 +12,7 @@ class join_threads {
   public:
     explicit join_threads(std::vector<std::thread> &threads_) : threads(threads_) {}
     ~join_threads() {
+        // extract join to destructor to ensure all threads are joined no matter if they throw or not
         for (unsigned long i = 0; i < threads.size(); ++i) {
             if (threads[i].joinable())
                 threads[i].join();
@@ -27,6 +28,7 @@ template <typename Iterator, typename T> T parallel_accumulate(Iterator first, I
     unsigned long const length = std::distance(first, last);
     if (!length)
         return init;
+
     unsigned long const min_per_thread = 25;
     unsigned long const max_threads = (length + min_per_thread - 1) / min_per_thread;
     unsigned long const hardware_threads = std::thread::hardware_concurrency();
@@ -36,6 +38,7 @@ template <typename Iterator, typename T> T parallel_accumulate(Iterator first, I
     std::vector<std::thread> threads(num_threads - 1);
     join_threads joiner(threads);
     Iterator block_start = first;
+
     for (unsigned long i = 0; i < (num_threads - 1); ++i) {
         Iterator block_end = block_start;
         std::advance(block_end, block_size);
@@ -44,11 +47,14 @@ template <typename Iterator, typename T> T parallel_accumulate(Iterator first, I
         threads[i] = std::thread(std::move(task), block_start, block_end);
         block_start = block_end;
     }
+
     T last_result = accumulate_block<Iterator, T>()(block_start, last);
     T result = init;
     for (unsigned long i = 0; i < (num_threads - 1); ++i) {
+        // will block until results are ready, so no need to join()
         result += futures[i].get();
     }
     result += last_result;
+
     return result;
 }
