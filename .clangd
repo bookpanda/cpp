@@ -1,6 +1,7 @@
 CompileFlags:
   Add:
     - -std=c++17
+    - -D_LIBCPP_ENABLE_EXPERIMENTAL
     - --driver-mode=g++
     - -isysroot
     - /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
