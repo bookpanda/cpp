@@ -7,7 +7,7 @@ class Solution {
         std::vector<int> prereq(numCourses, 0);
         std::vector<std::vector<int>> adjList(numCourses);
 
-        for (auto pr : prerequisites) {
+        for (auto &pr : prerequisites) {
             // a requires b
             adjList[pr[1]].push_back(pr[0]);
             prereq[pr[0]]++;
