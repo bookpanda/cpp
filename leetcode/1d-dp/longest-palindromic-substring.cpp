@@ -1,15 +1,6 @@
 #include <string>
 
 class Solution {
-  private:
-    bool isPalindrome(const std::string &s, int st, int ed) {
-        while (st < ed) {
-            if (s[st++] != s[ed--])
-                return false;
-        }
-        return true;
-    }
-
   public:
     std::string longestPalindrome(std::string s) {
         // writing expand around center time O(n^2), space O(1)
